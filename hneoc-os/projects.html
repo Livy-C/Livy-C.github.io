@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>其他项目 · HNeoC-OS 文档</title>
+  <meta name="description" content="其他仓库的使用说明">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 8 C75 25 88 55 50 92 C12 55 25 25 50 8 Z' fill='%23E8B4B8'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/doc.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="menu-btn" aria-label="打开目录">☰</button>
+    <a class="brand" href="index.html">HNeoC-OS <em>Docs</em></a>
+    <span class="version">v0.3.0</span>
+    <nav class="topnav">
+      <a href="https://github.com/Livy-C/HNeoC-OS" target="_blank" rel="noopener">GitHub</a>
+      <a href="../">返回个人主页</a>
+    </nav>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="side-group">
+        <p class="side-title">开始</p>
+        <a class="side-link" href="index.html">文档首页</a>
+        <a class="side-link" href="guide.html">使用指南</a>
+      </div>
+      <div class="side-group">
+        <p class="side-title">深入</p>
+        <a class="side-link" href="tools.html">内置工具</a>
+        <a class="side-link" href="develop.html">开发与调试</a>
+      </div>
+      <div class="side-group">
+        <p class="side-title">参考</p>
+        <a class="side-link" href="faq.html">常见问题</a>
+        <a class="side-link active" href="projects.html">其他项目</a>
+      </div>
+      <a class="back-link" href="../">← 返回个人主页</a>
+    </aside>
+    <main class="content">
+      <div class="breadcrumb"><a href="index.html">文档</a> / 参考 / 其他项目</div>
+      <article>
+        <h1>其他项目</h1>
+        <p class="lead">其他仓库的使用说明</p>
+<p class="lead">除了 HNeoC-OS，还有其他几个项目。这一页是它们的简要使用说明。</p>
+
+<h2 id="others">其他项目</h2>
+
+<h3 id="blockrooms">The Blockrooms</h3>
+<p>Minecraft <strong>Blockrooms 模组</strong>（Java，NeoForge 平台），fork 自 <a href="https://github.com/HYP-HLP/the-blockrooms" target="_blank" rel="noopener">HYP-HLP/the-blockrooms</a>。把阈限空间（liminal spaces）搬进方块世界。</p>
+<p><strong>使用</strong>：作为 NeoForge 模组安装——将构建产物放入 <code>.minecraft/mods/</code>，配合对应版本的 NeoForge 加载器运行。</p>
+
+<h3 id="backroomsdelight">BackroomsDelight</h3>
+<p>Minecraft <strong>Fabric 模组</strong>，把 Backrooms 作为无限、程序化生成的空间加入游戏。</p>
+<p><strong>环境要求</strong>：Minecraft 1.20.1 · Fabric Loader 0.19.5+ · Fabric API 0.92.12+1.20.1。</p>
+<p><strong>使用</strong>：构建产物放入 <code>.minecraft/mods/</code>，需同时安装 Fabric API。</p>
+
+<h3 id="endringreborn">EndRingReborn</h3>
+<p>Minecraft <strong>Fabric 模组</strong>（客户端与服务端均可），让被移除的末地环（end ring）回归。</p>
+<p><strong>使用</strong>：依赖 Fabric Loader 与 Fabric API，产物放入 <code>.minecraft/mods/</code>。</p>
+
+<h3 id="onehour">OneHourSurvival</h3>
+<p>一小时生存玩法插件（"A simple one-hour survival plugin"）。</p>
+<div class="callout">
+  <p>💡 仓库目前处于早期阶段（默认分支仅有 LICENSE），暂无构建产物与安装说明，后续更新后补充。</p>
+</div>
+
+<h3 id="kun">kun-liminal-theme</h3>
+<p>为 The Kunrooms Wikidot 站点编写的 <strong>liminal 风格主题</strong>，仓库为五个 CSS 文件（<code>kun-liminal.css</code>、<code>creeper-face.css</code>、<code>creeper-face-blrver.css</code>、<code>level-class-modify.css</code>、<code>meme-doc-comp.css</code>）。</p>
+<p><strong>使用</strong>：在 Wikidot 站点管理后台（Site Manager → Appearance → Themes）导入或覆盖对应 CSS 文件。</p>
+
+<h2 id="repos">仓库地址清单</h2>
+<table>
+  <thead><tr><th>项目</th><th>语言</th><th>说明</th><th>地址</th></tr></thead>
+  <tbody>
+    <tr><td>HNeoC-OS</td><td>C</td><td>类 Unix 小型操作系统</td><td><a href="https://github.com/Livy-C/HNeoC-OS" target="_blank" rel="noopener">Livy-C/HNeoC-OS</a></td></tr>
+    <tr><td>The Blockrooms</td><td>Java</td><td>Blockrooms 模组（NeoForge）</td><td><a href="https://github.com/Livy-C/the-blockrooms" target="_blank" rel="noopener">Livy-C/the-blockrooms</a></td></tr>
+    <tr><td>BackroomsDelight</td><td>Java</td><td>无限后室模组（Fabric）</td><td><a href="https://github.com/Livy-C/BackroomsDelight" target="_blank" rel="noopener">Livy-C/BackroomsDelight</a></td></tr>
+    <tr><td>EndRingReborn</td><td>Java</td><td>末地环回归模组（Fabric）</td><td><a href="https://github.com/Livy-C/EndRingReborn" target="_blank" rel="noopener">Livy-C/EndRingReborn</a></td></tr>
+    <tr><td>OneHourSurvival</td><td>—</td><td>一小时生存插件</td><td><a href="https://github.com/Livy-C/OneHourSurvival" target="_blank" rel="noopener">Livy-C/OneHourSurvival</a></td></tr>
+    <tr><td>kun-liminal-theme</td><td>CSS</td><td>Wikidot liminal 主题</td><td><a href="https://github.com/Livy-C/kun-liminal-theme" target="_blank" rel="noopener">Livy-C/kun-liminal-theme</a></td></tr>
+  </tbody>
+</table>
+      </article>
+      <nav class="pager"><a class="prev" href="faq.html"><small>上一页</small>常见问题</a><a class="next" href="index.html" style="visibility:hidden"><small>下一页</small>—</a></nav>
+    </main>
+    <aside class="toc">
+      <p class="toc-title">本页目录</p>
+      <nav id="toc"></nav>
+    </aside>
+  </div>
+  <footer class="site-footer">
+    <p>HNeoC-OS 文档 · <a href="https://github.com/Livy-C/HNeoC-OS" target="_blank" rel="noopener">Livy-C/HNeoC-OS</a> · MIT License</p>
+  </footer>
+  <script src="assets/doc.js"></script>
+</body>
+</html>

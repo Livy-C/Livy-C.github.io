@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>内置工具 · HNeoC-OS 文档</title>
+  <meta name="description" content="hpm 与 hncc 完整用法">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 8 C75 25 88 55 50 92 C12 55 25 25 50 8 Z' fill='%23E8B4B8'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/doc.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="menu-btn" aria-label="打开目录">☰</button>
+    <a class="brand" href="index.html">HNeoC-OS <em>Docs</em></a>
+    <span class="version">v0.3.0</span>
+    <nav class="topnav">
+      <a href="https://github.com/Livy-C/HNeoC-OS" target="_blank" rel="noopener">GitHub</a>
+      <a href="../">返回个人主页</a>
+    </nav>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="side-group">
+        <p class="side-title">开始</p>
+        <a class="side-link" href="index.html">文档首页</a>
+        <a class="side-link" href="guide.html">使用指南</a>
+      </div>
+      <div class="side-group">
+        <p class="side-title">深入</p>
+        <a class="side-link active" href="tools.html">内置工具</a>
+        <a class="side-link" href="develop.html">开发与调试</a>
+      </div>
+      <div class="side-group">
+        <p class="side-title">参考</p>
+        <a class="side-link" href="faq.html">常见问题</a>
+        <a class="side-link" href="projects.html">其他项目</a>
+      </div>
+      <a class="back-link" href="../">← 返回个人主页</a>
+    </aside>
+    <main class="content">
+      <div class="breadcrumb"><a href="index.html">文档</a> / 深入 / 内置工具</div>
+      <article>
+        <h1>内置工具</h1>
+        <p class="lead">hpm 与 hncc 完整用法</p>
+<p class="lead">HNeoC-OS 自带两个"在系统里干活"的工具：hpm 装软件，hncc 编译 C。这一页是它们的完整用法。</p>
+
+<h2 id="hpm">hpm 包管理器</h2>
+<p>HNeoC 没有网络，"软件源"就是磁盘上的 <code>/var/hpm/repo</code> 目录。用法照着 apt 来：</p>
+<pre><code>hneoc$root~/ hpm avail                  # 仓库里能装的包（i = 已装）
+hneoc$root~/ hpm install examples       # 安装，自动先装依赖
+hneoc$root~/ hpm list                   # 已装的包
+hneoc$root~/ hpm info &lt;包名&gt;            # 详细信息（真的去读一遍包头做对照）
+hneoc$root~/ hpm files &lt;包名&gt;           # 这个包装了哪些文件
+hneoc$root~/ hpm verify                 # 检查已装文件是不是都还在
+hneoc$root~/ hpm remove &lt;包名&gt;          # 卸载：删掉它装出来的每个文件
+hneoc$root~/ hpm update                 # 重扫仓库目录、重建索引
+hneoc$root~/ hpm search &lt;词&gt;            # 按包名和说明搜</code></pre>
+<table>
+  <thead><tr><th>子命令</th><th>作用</th></tr></thead>
+  <tbody>
+    <tr><td><code>hpm</code></td><td>用法 + 仓库/已装概况 + 当前身份</td></tr>
+    <tr><td><code>hpm list</code></td><td>已装的包</td></tr>
+    <tr><td><code>hpm avail</code></td><td>仓库里能装的包（i 表示已装）</td></tr>
+    <tr><td><code>hpm search &lt;词&gt;</code></td><td>按包名和说明搜</td></tr>
+    <tr><td><code>hpm info &lt;包名&gt;</code></td><td>详细信息，并且真的去读一遍包头做对照</td></tr>
+    <tr><td><code>hpm install &lt;包名&gt;...</code></td><td>安装，<strong>自动先装依赖</strong>（examples 依赖 hello + tools）</td></tr>
+    <tr><td><code>hpm remove &lt;包名&gt;</code></td><td>卸载：删掉它装出来的每个文件，并更新数据库</td></tr>
+    <tr><td><code>hpm files &lt;包名&gt;</code></td><td>这个包装了哪些文件</td></tr>
+    <tr><td><code>hpm verify</code></td><td>检查已装文件是不是都还在</td></tr>
+    <tr><td><code>hpm update</code></td><td>重扫仓库目录、重建索引（相当于 apt update，只是源在本地）</td></tr>
+  </tbody>
+</table>
+<p>镜像内置四个包：<code>docs</code>（hpm 与 HNeoFS 磁盘布局的文本说明）、<code>examples</code>（hncc 示例源码）、<code>hello</code>（hpm 演示程序）、<code>tools</code>（<code>calc</code> 整数计算器）。</p>
+<pre><code>hneoc$root~/ hpm install examples
+hneoc$root~/ hi                        # 装完就能跑</code></pre>
+<div class="callout">
+  <p>💡 安装要靠包头里的权限位恢复执行位——新建的文件默认 <code>0644</code> 没有执行位，非 root 用户就跑不起来。</p>
+</div>
+
+<h2 id="hncc">hncc：在系统里编译 C</h2>
+<p><code>hncc</code> 是一个跑在 HNeoC 上的 C 编译器，<strong>自己生成 x86 机器码</strong>，不经过任何汇编器或链接器：</p>
+<pre><code>hneoc$root~/share/hncc hncc hello.c
+compiled hello.c
+  code   : 5874 bytes
+  data   : 113 bytes
+  bss    : 4 bytes
+  output : hello.lxe
+
+hneoc$root~/share/hncc ./hello.lxe
+hello from a program that hncc compiled on HNeoC</code></pre>
+<p>用法：<code>share/hncc hncc &lt;源文件&gt;</code> 产出同目录的 <code>.lxe</code>，再用 <code>./&lt;程序&gt;</code> 运行。</p>
+
+<h3 id="hncc-subset">支持的 C 子集</h3>
+<ul>
+  <li><strong>类型</strong>：<code>int</code> <code>char</code> <code>void</code>、指针、数组、<code>struct</code>、<code>enum</code>、<code>typedef</code>；<code>uint8_t/uint16_t/uint32_t/int32_t/size_t/bool</code> 内建（不需要 #include）</li>
+  <li><strong>语句</strong>：声明（可带初值）、<code>if/else</code>、<code>while</code>、<code>do-while</code>、<code>for</code>、<code>switch/case/default</code>、<code>return</code>、<code>break</code>、<code>continue</code></li>
+  <li><strong>运算</strong>：<code>+ - * / %</code>、比较、<code>&amp;&amp; ||</code>（短路）、<code>! ~ &amp; | ^ &lt;&lt; &gt;&gt;</code>、<code>++ --</code>、赋值与复合赋值、<code>? :</code>、<code>[]</code>、<code>()</code>、<code>&amp;</code> <code>*</code>、<code>sizeof</code>、强制类型转换</li>
+  <li><strong>结构体</strong>：定义、前向声明、<code>a.f</code>、<code>p-&gt;f</code>（可串链）、结构体数组、<code>sizeof(struct T)</code>、typedef</li>
+  <li><strong>初始化</strong>：<code>int a[4] = {1,2,3,4};</code>、<code>char s[] = "abc";</code>、长度自动推断</li>
+  <li><strong>变参</strong>：<code>printf(fmt, ...)</code>；自己写带 <code>...</code> 的函数也行</li>
+  <li><strong>其它</strong>：函数（递归、前置声明）、全局变量、<code>#define</code> 常量</li>
+</ul>
+
+<h3 id="hncc-selfhost">自举试验</h3>
+<p><code>build.ps1</code> 会把 <code>user/hncc.c</code> 拷进镜像的 <code>/share/hncc/hncc.c</code>，可以直接让 hncc 编译它自己：</p>
+<pre><code>hneoc$root~/share/hncc hncc hncc.c</code></pre>
+<p>这条路拿一份约 4900 行的真实程序去撞编译器的每一条限制，撞出来的每个缺口都补上了对应的诊断和回归检查。</p>
+
+<h3 id="hncc-limits">已知限制</h3>
+<p>以下都是<strong>明确报错</strong>，不会默默生成坏代码：</p>
+<ul>
+  <li>不支持浮点、<code>long long</code>（当 int 处理）、真正的预处理器、多文件编译</li>
+  <li>结构体只能通过<strong>指针</strong>传递和返回，不能按值传、不能整体赋值</li>
+  <li>结构体不能包含自己（可以包含指向自己的指针，链表能写）</li>
+  <li>调用实参最多 16 个</li>
+  <li>局部变量不能和 <code>typedef</code> 名重名</li>
+  <li>初始化列表不支持嵌套（如 <code>int m[2][2] = {{1,2},{3,4}}</code>）</li>
+</ul>
+<p><code>/share/hncc/</code> 下有八个例子：<code>hello.c</code>、<code>fib.c</code>（递归 + 数组 + 指针）、<code>t1.c</code>~<code>t7.c</code>（数字/结构体/初始化/printf/enum/typedef 七组数字诊断）。</p>
+      </article>
+      <nav class="pager"><a class="prev" href="guide.html"><small>上一页</small>使用指南</a><a class="next" href="develop.html"><small>下一页</small>开发与调试</a></nav>
+    </main>
+    <aside class="toc">
+      <p class="toc-title">本页目录</p>
+      <nav id="toc"></nav>
+    </aside>
+  </div>
+  <footer class="site-footer">
+    <p>HNeoC-OS 文档 · <a href="https://github.com/Livy-C/HNeoC-OS" target="_blank" rel="noopener">Livy-C/HNeoC-OS</a> · MIT License</p>
+  </footer>
+  <script src="assets/doc.js"></script>
+</body>
+</html>

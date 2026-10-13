@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文档首页 · HNeoC-OS 文档</title>
+  <meta name="description" content="HNeoC-OS 是什么、如何快速跑起来">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 8 C75 25 88 55 50 92 C12 55 25 25 50 8 Z' fill='%23E8B4B8'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/doc.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="menu-btn" aria-label="打开目录">☰</button>
+    <a class="brand" href="index.html">HNeoC-OS <em>Docs</em></a>
+    <span class="version">v0.3.0</span>
+    <nav class="topnav">
+      <a href="https://github.com/Livy-C/HNeoC-OS" target="_blank" rel="noopener">GitHub</a>
+      <a href="../">返回个人主页</a>
+    </nav>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="side-group">
+        <p class="side-title">开始</p>
+        <a class="side-link active" href="index.html">文档首页</a>
+        <a class="side-link" href="guide.html">使用指南</a>
+      </div>
+      <div class="side-group">
+        <p class="side-title">深入</p>
+        <a class="side-link" href="tools.html">内置工具</a>
+        <a class="side-link" href="develop.html">开发与调试</a>
+      </div>
+      <div class="side-group">
+        <p class="side-title">参考</p>
+        <a class="side-link" href="faq.html">常见问题</a>
+        <a class="side-link" href="projects.html">其他项目</a>
+      </div>
+      <a class="back-link" href="../">← 返回个人主页</a>
+    </aside>
+    <main class="content">
+      <div class="breadcrumb"><a href="index.html">文档</a> / 开始 / 文档首页</div>
+      <article>
+        <h1>文档首页</h1>
+        <p class="lead">HNeoC-OS 是什么、如何快速跑起来</p>
+<p class="lead">HNeoC-OS 是一个从零写起的类 Unix 小型操作系统（x86 32 位），用来学习操作系统原理。当前版本 <strong>0.3.0</strong>——它已经不是一个玩具 Demo：物理内存管理、分页、ATA 磁盘驱动、自研文件系统、ring 3 用户态、系统调用、抢占式多任务，一应俱全。Shell 本身也是一个 ring 3 用户程序，磁盘上的每条命令都是独立可执行文件，靠 fork + exec + wait 跑起来，和真实 Unix 一样。</p>
+
+<h2 id="features">特性</h2>
+<ul class="feature-list">
+  <li><strong>从引导扇区到用户态</strong>：512 字节 boot → 保护模式 → 内核 → ring 3，全部手写</li>
+  <li><strong>HNeoFS</strong>：自研文件系统，目录树 + 连续存放，可写、可删除，数据真落盘</li>
+  <li><strong>30 个系统调用</strong>：fork / exec / wait、文件 I/O、sbrk、chmod、listdir……</li>
+  <li><strong>抢占式多任务</strong>：PIT 100Hz 调度，16 个进程槽，僵尸回收与孤儿过继</li>
+  <li><strong>多用户与权限</strong>：root / livy / guest 三账户，Unix 三位权限位</li>
+  <li><strong>用户态 Shell</strong>：/bin/sh.lxe 跑在 ring 3，提示符、行编辑、历史、PATH 查找全在用户态</li>
+  <li><strong>vi 编辑器</strong>：约 1700 行的全屏模态编辑器，支持计数前缀与多级撤销</li>
+  <li><strong>hpm 包管理器</strong> 与 <strong>hncc 编译器</strong>：在系统里装包、编译 C，还能让 hncc 编译它自己</li>
+</ul>
+
+<h2 id="quickstart">快速开始</h2>
+
+<h3 id="requirements">环境要求</h3>
+<table>
+  <thead><tr><th>组件</th><th>位置</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td>NASM</td><td><code>.\tools\nasm.exe</code></td><td>汇编引导扇区和中断存根，随仓库附带</td></tr>
+    <tr><td>MinGW-w64 <strong>i686</strong></td><td><code>D:\mingw32\bin</code></td><td><strong>必须是 32 位版本</strong></td></tr>
+    <tr><td>VirtualBox</td><td><code>D:\VB</code></td><td>可选，用于生成 VDI 和自动化测试</td></tr>
+    <tr><td>PowerShell 5.1+</td><td>—</td><td>构建与运行脚本均为 PowerShell</td></tr>
+  </tbody>
+</table>
+<div class="callout warn">
+  <p>⚠️ <strong>MinGW 必须是 i686（32 位）</strong>。用 <code>gcc -dumpmachine</code> 检查，输出 <code>i686-w64-mingw32</code> 才对。</p>
+</div>
+
+<h3 id="build">构建与运行</h3>
+<pre><code>.\build.ps1 -VmName "HNeoC"   # 构建，并自动把新磁盘挂到虚拟机上
+.\run.ps1                      # 构建 + 无头启动 + 打印屏幕内容
+.\run.ps1 -Type "ls"           # 启动后自动敲一条命令
+.\run.ps1 -Stop                # 关机</code></pre>
+<p>构建完成后，打开 VirtualBox 图形界面启动 <code>HNeoC</code> 虚拟机即可交互。</p>
+<div class="callout warn">
+  <p>⚠️ <strong><code>build.ps1</code> 每次都会重新生成 VDI，会清掉磁盘上运行时的改动。</strong>只想重启验证数据持久化（比如 <code>note</code> 命令写的 <code>notes.txt</code>），用 <code>.\run.ps1 -NoBuild</code>。</p>
+</div>
+
+<h3 id="login">登录系统</h3>
+<p>镜像预置三个账户（用户名 / 密码相同）：</p>
+<table>
+  <thead><tr><th>账户</th><th>密码</th><th>身份</th></tr></thead>
+  <tbody>
+    <tr><td><code>root</code></td><td><code>root</code></td><td>管理员（uid 0）</td></tr>
+    <tr><td><code>livy</code></td><td><code>livy</code></td><td>管理员（uid 1000）</td></tr>
+    <tr><td><code>guest</code></td><td><code>guest</code></td><td>普通用户（uid 1001）</td></tr>
+  </tbody>
+</table>
+<pre><code>login: root
+Password: ****
+welcome, root (admin)
+hneoc$root~/ ls</code></pre>
+<p>提示符格式为 <code>hneoc$用户名~/工作目录</code>，<code>$</code> 和 <code>~</code> 是字面字符。随时可以用 <code>login</code> 命令切换身份。</p>
+
+<h2 id="next">下一步</h2>
+<div class="card-grid">
+  <a class="doc-card" href="guide.html"><strong>使用指南</strong><span>Shell 上手、命令速查表、vi 编辑器、账户与权限</span></a>
+  <a class="doc-card" href="tools.html"><strong>内置工具</strong><span>hpm 包管理器与 hncc C 编译器的完整用法</span></a>
+  <a class="doc-card" href="develop.html"><strong>开发与调试</strong><span>写用户程序、一条命令的全系统回归、串口日志</span></a>
+  <a class="doc-card" href="faq.html"><strong>常见问题</strong><span>8 条真实踩过的坑与解法</span></a>
+</div>
+      </article>
+      <nav class="pager"><a class="prev" href="index.html" style="visibility:hidden"><small>上一页</small>—</a><a class="next" href="guide.html"><small>下一页</small>使用指南</a></nav>
+    </main>
+    <aside class="toc">
+      <p class="toc-title">本页目录</p>
+      <nav id="toc"></nav>
+    </aside>
+  </div>
+  <footer class="site-footer">
+    <p>HNeoC-OS 文档 · <a href="https://github.com/Livy-C/HNeoC-OS" target="_blank" rel="noopener">Livy-C/HNeoC-OS</a> · MIT License</p>
+  </footer>
+  <script src="assets/doc.js"></script>
+</body>
+</html>

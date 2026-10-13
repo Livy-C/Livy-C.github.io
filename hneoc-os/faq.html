@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>常见问题 · HNeoC-OS 文档</title>
+  <meta name="description" content="8 条真实踩坑">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 8 C75 25 88 55 50 92 C12 55 25 25 50 8 Z' fill='%23E8B4B8'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/doc.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="menu-btn" aria-label="打开目录">☰</button>
+    <a class="brand" href="index.html">HNeoC-OS <em>Docs</em></a>
+    <span class="version">v0.3.0</span>
+    <nav class="topnav">
+      <a href="https://github.com/Livy-C/HNeoC-OS" target="_blank" rel="noopener">GitHub</a>
+      <a href="../">返回个人主页</a>
+    </nav>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="side-group">
+        <p class="side-title">开始</p>
+        <a class="side-link" href="index.html">文档首页</a>
+        <a class="side-link" href="guide.html">使用指南</a>
+      </div>
+      <div class="side-group">
+        <p class="side-title">深入</p>
+        <a class="side-link" href="tools.html">内置工具</a>
+        <a class="side-link" href="develop.html">开发与调试</a>
+      </div>
+      <div class="side-group">
+        <p class="side-title">参考</p>
+        <a class="side-link active" href="faq.html">常见问题</a>
+        <a class="side-link" href="projects.html">其他项目</a>
+      </div>
+      <a class="back-link" href="../">← 返回个人主页</a>
+    </aside>
+    <main class="content">
+      <div class="breadcrumb"><a href="index.html">文档</a> / 参考 / 常见问题</div>
+      <article>
+        <h1>常见问题</h1>
+        <p class="lead">8 条真实踩坑</p>
+<p class="lead">每一条都真实卡过一次，按使用中遇到的频率排列。</p>
+
+<h2 id="faq">常见问题</h2>
+
+<h3 id="q-mingw">构建时报链接错误？</h3>
+<p>MinGW 必须是 <strong>i686 32 位版本</strong>。<code>gcc -dumpmachine</code> 输出 <code>i686-w64-mingw32</code> 才对。用 64 位版本会直接链接失败。</p>
+
+<h3 id="q-chinese">界面里想显示中文？</h3>
+<p>不行。VGA 文本模式是 CP437，没有汉字字形，界面文字必须用 ASCII。代码注释可以随意用中文。</p>
+
+<h3 id="q-persist">重启后我写的文件没了？</h3>
+<p><code>build.ps1</code> 每次重新生成 VDI，会清掉磁盘改动。验证持久化用 <code>.\run.ps1 -NoBuild</code>。</p>
+
+<h3 id="q-builtin">改了内核内置命令没效果？</h3>
+<p>Shell 是磁盘优先的，<code>ls</code> 敲下去先跑 <code>/bin/ls.lxe</code>。要验证内置命令的改动，先 <code>rm /bin/ls.lxe</code> 去掉抢跑的程序。</p>
+
+<h3 id="q-bom">PowerShell 脚本中文乱码或报莫名语法错误？</h3>
+<p>Windows PowerShell 5.1 把无 BOM 的 UTF-8 脚本当 GBK 读。改完 <code>.ps1</code> 跑一下 <code>tools\fix-bom.ps1</code>，或确认文件头三个字节是 <code>EF BB BF</code>。同理，别用 <code>Get-Content</code> / <code>Set-Content</code> 碰无 BOM 的 UTF-8 文件。</p>
+
+<h3 id="q-lock">删除 VDI 或日志文件失败？</h3>
+<p>虚拟机运行时会锁住它们。先 <code>.\run.ps1 -Stop</code> 关机。</p>
+
+<h3 id="q-temp">构建时报 No space left on device？</h3>
+<p>GCC 中间文件默认写系统 <code>%TEMP%</code>，系统盘满就会挂在某个 <code>.c</code> 上，看着像源码问题。<code>build.ps1</code> 已把 <code>TMP</code>/<code>TEMP</code> 指到项目自己的 <code>build\tmp\</code>。</p>
+
+<h3 id="q-stack">用户程序莫名缺页崩溃？</h3>
+<p>大数组别放栈上（用户栈 32KB）。大缓冲区放全局或 malloc。内核在页错误时会提示"是不是栈溢出"。</p>
+      </article>
+      <nav class="pager"><a class="prev" href="develop.html"><small>上一页</small>开发与调试</a><a class="next" href="projects.html"><small>下一页</small>其他项目</a></nav>
+    </main>
+    <aside class="toc">
+      <p class="toc-title">本页目录</p>
+      <nav id="toc"></nav>
+    </aside>
+  </div>
+  <footer class="site-footer">
+    <p>HNeoC-OS 文档 · <a href="https://github.com/Livy-C/HNeoC-OS" target="_blank" rel="noopener">Livy-C/HNeoC-OS</a> · MIT License</p>
+  </footer>
+  <script src="assets/doc.js"></script>
+</body>
+</html>

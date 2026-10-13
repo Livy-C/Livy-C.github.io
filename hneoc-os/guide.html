@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>使用指南 · HNeoC-OS 文档</title>
+  <meta name="description" content="Shell、命令、vi 与权限">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 8 C75 25 88 55 50 92 C12 55 25 25 50 8 Z' fill='%23E8B4B8'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/doc.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="menu-btn" aria-label="打开目录">☰</button>
+    <a class="brand" href="index.html">HNeoC-OS <em>Docs</em></a>
+    <span class="version">v0.3.0</span>
+    <nav class="topnav">
+      <a href="https://github.com/Livy-C/HNeoC-OS" target="_blank" rel="noopener">GitHub</a>
+      <a href="../">返回个人主页</a>
+    </nav>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="side-group">
+        <p class="side-title">开始</p>
+        <a class="side-link" href="index.html">文档首页</a>
+        <a class="side-link active" href="guide.html">使用指南</a>
+      </div>
+      <div class="side-group">
+        <p class="side-title">深入</p>
+        <a class="side-link" href="tools.html">内置工具</a>
+        <a class="side-link" href="develop.html">开发与调试</a>
+      </div>
+      <div class="side-group">
+        <p class="side-title">参考</p>
+        <a class="side-link" href="faq.html">常见问题</a>
+        <a class="side-link" href="projects.html">其他项目</a>
+      </div>
+      <a class="back-link" href="../">← 返回个人主页</a>
+    </aside>
+    <main class="content">
+      <div class="breadcrumb"><a href="index.html">文档</a> / 开始 / 使用指南</div>
+      <article>
+        <h1>使用指南</h1>
+        <p class="lead">Shell、命令、vi 与权限</p>
+<p class="lead">这一页覆盖日常使用：Shell 怎么用、有哪些命令、怎么编辑文件、权限是怎么回事。</p>
+
+<h2 id="shell">Shell 快速上手</h2>
+<p>几个核心概念：</p>
+<ul>
+  <li><strong>磁盘优先</strong>：敲任意命令时，Shell 先找磁盘上有没有 <code>/bin/&lt;命令名&gt;.lxe</code>，找到就交给 ring 3 程序执行；找不到才回退到内核内置命令。</li>
+  <li><strong>行编辑</strong>：退格、方向键、Home / End / Delete、Ctrl+U（清行）、Ctrl+L（清屏），↑/↓ 翻 20 条历史命令。</li>
+  <li><strong>回看滚过的输出</strong>：鼠标滚轮一次 3 行，PageUp/PageDown 一屏，Home 到最旧，End 回实时画面；按其他任意键也会回到实时画面。</li>
+  <li><strong>后台任务</strong>：行尾加 <code>&amp;</code> 即可后台运行，如 <code>bg &amp;</code>。</li>
+  <li><strong>Ctrl+C</strong>：杀死当前前台进程；在提示符下按 Ctrl+C 会杀掉 Shell 本身，内核随即重新拉起一个——效果等于重新登录。</li>
+</ul>
+
+<h2 id="commands">命令速查表</h2>
+
+<h3 id="cmd-disk">磁盘上的程序（ring 3，优先执行）</h3>
+<table>
+  <thead><tr><th>命令</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td><code>sh</code></td><td>用户态 Shell 本体（提示符、行编辑、历史、PATH 查找）</td></tr>
+    <tr><td><code>ls [目录]</code></td><td>列出目录，不带参数即当前工作目录</td></tr>
+    <tr><td><code>cat &lt;文件&gt;</code></td><td>打印文件内容</td></tr>
+    <tr><td><code>ver</code></td><td>版本与运行环境信息</td></tr>
+    <tr><td><code>hello</code></td><td>最小的用户态示例程序</td></tr>
+    <tr><td><code>sysinfo</code></td><td>实时刷新运行时长，按 q 退出</td></tr>
+    <tr><td><code>bg</code></td><td>安静的背景任务，用来观察 taskmgr</td></tr>
+    <tr><td><code>ansi</code></td><td>ANSI 转义序列演示（定位、颜色、擦除、滚动区域、备用屏幕）</td></tr>
+    <tr><td><code>vi [文件]</code></td><td>全屏模态编辑器</td></tr>
+    <tr><td><code>wtest</code></td><td>可写文件系统自测（创建、写入、定位读、追加、删除）</td></tr>
+    <tr><td><code>systest</code></td><td>系统调用边界自测</td></tr>
+    <tr><td><code>fault</code></td><td>故意触发用户态缺页，验证内核只杀进程不停机</td></tr>
+    <tr><td><code>spin</code></td><td>前台死循环，验证 Ctrl+C 能拉回跑飞的程序</td></tr>
+    <tr><td><code>bigio</code> / <code>bigbss</code> / <code>bigdata</code></td><td>大 I/O、大 bss、大镜像加载测试</td></tr>
+    <tr><td><code>toobig</code> / <code>waytoobig</code></td><td>镜像超限测试（一个能跑，一个被明确拒绝）</td></tr>
+    <tr><td><code>note</code></td><td>往 notes.txt 追加一行，验证数据真的落盘</td></tr>
+    <tr><td><code>termdemo</code></td><td>term.h 终端 API 示例（固定状态栏 + 滚动区域 + 进度条）</td></tr>
+    <tr><td><code>hpm</code></td><td>包管理器（见<a href="tools.html#hpm">内置工具</a>）</td></tr>
+    <tr><td><code>hncc</code></td><td>C 编译器，把 .c 编成 .lxe（见<a href="tools.html#hncc">内置工具</a>）</td></tr>
+    <tr><td><code>forktest [stress 30]</code></td><td>fork / exec / wait 全套自检；带参数是泄漏压测</td></tr>
+  </tbody>
+</table>
+
+<h3 id="cmd-builtin">内核内置命令（回退）</h3>
+<table>
+  <thead><tr><th>命令</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td><code>help</code></td><td>命令列表</td></tr>
+    <tr><td><code>echo &lt;文本&gt;</code></td><td>原样打回文本</td></tr>
+    <tr><td><code>about</code> / <code>version</code></td><td>系统介绍 / 内核版本</td></tr>
+    <tr><td><code>cd &lt;目录&gt;</code> / <code>pwd</code></td><td>切换 / 显示工作目录（支持 . .. 相对路径）</td></tr>
+    <tr><td><code>mkdir &lt;目录&gt;</code> / <code>rm &lt;文件&gt;</code></td><td>建目录 / 删文件（需父目录可写）</td></tr>
+    <tr><td><code>whoami</code> / <code>users</code></td><td>当前账户 / 账户表</td></tr>
+    <tr><td><code>useradd &lt;名字&gt;</code> / <code>login</code></td><td>加账户（仅管理员）/ 重新登录</td></tr>
+    <tr><td><code>mem</code></td><td>E820 内存表、页框分配器、内核堆、分页状态</td></tr>
+    <tr><td><code>heap</code></td><td>内存分配器自检</td></tr>
+    <tr><td><code>diskinfo</code></td><td>ATA 设备信息 + 实测 PIO 读</td></tr>
+    <tr><td><code>mouse</code></td><td>PS/2 鼠标状态</td></tr>
+    <tr><td><code>screendump [colors]</code></td><td>把屏幕内容打出来（含逐格配色），调试验证用</td></tr>
+    <tr><td><code>fsstat</code></td><td>文件系统超级块与空间占用</td></tr>
+    <tr><td><code>exec &lt;程序&gt;</code> / <code>spawn &lt;程序&gt;</code></td><td>前台阻塞运行 / 后台启动</td></tr>
+    <tr><td><code>taskmgr</code> / <code>tasks</code></td><td>任务列表、CPU、内存、系统调用统计</td></tr>
+    <tr><td><code>kill &lt;pid&gt;</code></td><td>结束进程</td></tr>
+    <tr><td><code>uptime</code> / <code>ticks</code></td><td>开机时长 / 定时器滴答</td></tr>
+    <tr><td><code>color</code> / <code>colors</code> / <code>clear</code></td><td>配色演示 / 清屏</td></tr>
+    <tr><td><code>history</code> / <code>banner</code></td><td>历史命令 / 重印横幅</td></tr>
+    <tr><td><code>panic &lt;信息&gt;</code> / <code>reboot</code> / <code>halt</code></td><td>崩溃测试 / 重启 / 停机</td></tr>
+  </tbody>
+</table>
+<div class="callout">
+  <p>💡 改了内核内置命令却看不到效果？因为 Shell 是磁盘优先的——<code>ls</code> 敲下去先跑 <code>/bin/ls.lxe</code>。要验证内置命令的改动，先 <code>rm /bin/ls.lxe</code> 去掉抢跑的程序。</p>
+</div>
+
+<h2 id="files">文件操作</h2>
+<pre><code>hneoc$root~/ ls /bin          # 看 /bin 里有什么
+hneoc$root~/ cat readme.txt   # 读文件
+hneoc$root~/ cd /home         # 切目录
+hneoc$root~/home mkdir d1     # 建目录
+hneoc$root~/home note         # 往 notes.txt 追加一行</code></pre>
+<p>数据<strong>真的落盘</strong>：<code>note</code> 写的行在重启（用 <code>-NoBuild</code>，不重新打包镜像）之后依然在。</p>
+
+<h2 id="vi">vi 编辑器</h2>
+<p><code>vi</code> 是从零写的全屏编辑器（约 1700 行），支持计数前缀（<code>3j</code>、<code>2dd</code>）、多级撤销（8 级）、搜索（<code>/</code> <code>?</code> <code>n</code> <code>N</code>）。</p>
+<table>
+  <thead><tr><th>类别</th><th>按键</th></tr></thead>
+  <tbody>
+    <tr><td>移动</td><td><code>h j k l</code>、方向键、<code>0</code> <code>$</code>、<code>w</code> <code>b</code>、<code>gg</code> <code>G</code>、PageUp/PageDown</td></tr>
+    <tr><td>删除</td><td><code>dd</code> <code>dw</code> <code>d$</code> <code>d0</code>、<code>dj</code> <code>dk</code>、<code>D</code>、<code>X</code></td></tr>
+    <tr><td>复制粘贴</td><td><code>yy</code> <code>yw</code> <code>y$</code>、<code>p</code> <code>P</code></td></tr>
+    <tr><td>修改</td><td><code>cc</code> <code>cw</code> <code>C</code> <code>S</code>（改完直接进插入模式）</td></tr>
+    <tr><td>其它</td><td><code>r</code> 替换字符、<code>J</code> 续行、<code>u</code> 撤销</td></tr>
+    <tr><td>进入插入</td><td><code>i</code> <code>a</code> <code>A</code> <code>I</code>、<code>o</code> <code>O</code></td></tr>
+    <tr><td>命令</td><td><code>:w</code> <code>:w &lt;文件&gt;</code> <code>:q</code> <code>:q!</code> <code>:wq</code> <code>:x</code> <code>:e &lt;文件&gt;</code>、<code>:&lt;行号&gt;</code>、<code>ZZ</code></td></tr>
+  </tbody>
+</table>
+<p>命令行可以直接带文件：<code>vi readme.txt</code>。</p>
+
+<h2 id="accounts">账户与权限</h2>
+<p>账户表在 <code>/etc/passwd</code>，一行一个账户，字段用冒号分隔：</p>
+<pre><code>name:password_hash:uid:home:admin
+root:7c9d79a9:0:/:1
+livy:7c9a16c9:1000:/home:1
+guest:0f88c14d:1001:/home:0</code></pre>
+<p><code>admin = 1</code> 表示管理员：能加账户、能往别的用户的地盘写。uid 0 永远是 root。</p>
+<p>权限位借用 Unix 的三组三位写法（中间"组"三位不参与判断，因为没有用户组）：</p>
+<table>
+  <thead><tr><th>权限</th><th>数值</th><th>含义</th></tr></thead>
+  <tbody>
+    <tr><td><code>0755</code></td><td><code>0x1ED</code></td><td>属主可读写执行，其他人可读可执行（目录、.lxe）</td></tr>
+    <tr><td><code>0644</code></td><td><code>0x1A4</code></td><td>属主可读写，其他人只读（普通文件）</td></tr>
+    <tr><td><code>0777</code></td><td><code>0x1FF</code></td><td>谁都可读写（/home）</td></tr>
+  </tbody>
+</table>
+<p>判断规则：<code>uid == 0</code> 或 admin 一律放行；属主看高三位，其他人看低三位。根目录没有自己的目录项，"往 / 里写"一律要求管理员。</p>
+<p>guest 用户的真实边界（都在虚拟机里核对过）：</p>
+<table>
+  <thead><tr><th>操作</th><th>结果</th></tr></thead>
+  <tbody>
+    <tr><td>在 <code>/home</code> 里 <code>mkdir mine</code>、写文件、删除</td><td>✅ 成功</td></tr>
+    <tr><td><code>mkdir /nope</code></td><td>❌ permission denied</td></tr>
+    <tr><td><code>rm /motd.txt</code></td><td>❌ cannot remove（/ 不归他）</td></tr>
+    <tr><td><code>useradd hacker</code></td><td>❌ only an administrator can add accounts</td></tr>
+  </tbody>
+</table>
+<div class="callout warn">
+  <p>⚠️ 口令在表里只存 djb2 哈希——<strong>这不是安全措施</strong>（无盐、算法公开），只是别让明文口令躺在磁盘上，配合教学镜像的定位。</p>
+</div>
+      </article>
+      <nav class="pager"><a class="prev" href="index.html"><small>上一页</small>文档首页</a><a class="next" href="tools.html"><small>下一页</small>内置工具</a></nav>
+    </main>
+    <aside class="toc">
+      <p class="toc-title">本页目录</p>
+      <nav id="toc"></nav>
+    </aside>
+  </div>
+  <footer class="site-footer">
+    <p>HNeoC-OS 文档 · <a href="https://github.com/Livy-C/HNeoC-OS" target="_blank" rel="noopener">Livy-C/HNeoC-OS</a> · MIT License</p>
+  </footer>
+  <script src="assets/doc.js"></script>
+</body>
+</html>

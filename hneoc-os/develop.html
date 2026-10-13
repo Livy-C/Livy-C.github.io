@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>开发与调试 · HNeoC-OS 文档</title>
+  <meta name="description" content="写程序、回归测试、串口日志">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 8 C75 25 88 55 50 92 C12 55 25 25 50 8 Z' fill='%23E8B4B8'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/doc.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="menu-btn" aria-label="打开目录">☰</button>
+    <a class="brand" href="index.html">HNeoC-OS <em>Docs</em></a>
+    <span class="version">v0.3.0</span>
+    <nav class="topnav">
+      <a href="https://github.com/Livy-C/HNeoC-OS" target="_blank" rel="noopener">GitHub</a>
+      <a href="../">返回个人主页</a>
+    </nav>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="side-group">
+        <p class="side-title">开始</p>
+        <a class="side-link" href="index.html">文档首页</a>
+        <a class="side-link" href="guide.html">使用指南</a>
+      </div>
+      <div class="side-group">
+        <p class="side-title">深入</p>
+        <a class="side-link" href="tools.html">内置工具</a>
+        <a class="side-link active" href="develop.html">开发与调试</a>
+      </div>
+      <div class="side-group">
+        <p class="side-title">参考</p>
+        <a class="side-link" href="faq.html">常见问题</a>
+        <a class="side-link" href="projects.html">其他项目</a>
+      </div>
+      <a class="back-link" href="../">← 返回个人主页</a>
+    </aside>
+    <main class="content">
+      <div class="breadcrumb"><a href="index.html">文档</a> / 深入 / 开发与调试</div>
+      <article>
+        <h1>开发与调试</h1>
+        <p class="lead">写程序、回归测试、串口日志</p>
+<p class="lead">想在 HNeoC-OS 上写自己的程序，或者改完内核想确认"没弄坏别的"？看这一页。</p>
+
+<h2 id="userprog">在宿主机开发用户程序</h2>
+<p>在 <code>user/</code> 目录下新建 <code>.c</code> 文件即可，下次 <code>.\build.ps1</code> 会自动编译成 <code>fsroot/&lt;名字&gt;.lxe</code> 并打包进磁盘镜像，敲名字就能跑——<strong>不需要注册任何命令表</strong>。</p>
+<pre><code>// user/hello.c
+#include "hneoc.h"
+
+static int counter[8];      // 放在 .bss，加载器会清零
+
+int main(void) {
+    puts("hello from ring 3, pid ");
+    put_int(getpid());
+    putchar('\n');
+    return 0;
+}</code></pre>
+<p>写程序优先用 <code>user/lib/</code> 那套标准命名的用户态 C 库（<code>string.h</code> <code>stdio.h</code> <code>stdlib.h</code> <code>unistd.h</code> <code>term.h</code>……），<code>#include "hneoc.h"</code> 一次全拉进来。其中 <code>term.h</code> 把 ANSI 转义序列整个包住，写全屏程序时全程不出现一个 <code>"\x1b["</code>。</p>
+<div class="callout warn">
+  <p>⚠️ 两个硬性要求：入口函数必须叫 <code>main</code>；用户程序里<strong>不要</strong>出现排在代码前面的静态初始化逻辑——LXE 入口偏移固定为 0。</p>
+</div>
+
+<h2 id="regress">一条命令的全系统回归</h2>
+<p>改完东西想确认"没弄坏别的"：</p>
+<pre><code>.\tools\regress.ps1                 # 构建 + 启动 + 跑全部检查（三十多项）
+.\tools\regress.ps1 -SkipBuild      # 用当前镜像，省掉构建
+.\tools\regress.ps1 -Only hpm       # 只跑名字匹配的检查
+.\tools\regress.ps1 -List           # 列出所有检查
+.\tools\regress.ps1 -KeepRunning    # 跑完不关机，自己接着玩</code></pre>
+<p>它把"构建 → 无头启动 → 敲命令 → 对着串口日志断言"固化成脚本：每个检查发完命令后<strong>轮询</strong>串口日志直到期望的正则全部出现（不用固定 sleep），虚拟机崩了会立刻停下并指出是哪个检查。新加功能时顺手往检查表里加一条，比手敲一遍可靠得多。</p>
+
+<h2 id="serial">串口日志（强烈推荐）</h2>
+<p>内核把屏幕字符同时写到 COM1。<code>run.ps1</code> 已自动把串口重定向到 <code>build/serial.log</code>，宿主机直接读文件就能看到和屏幕完全一致的文本，不用截图。</p>
+
+<h2 id="automation">自动化输入与内存转储</h2>
+<pre><code>.\tools\vm-type.ps1 -VmName "HNeoC" -Text "taskmgr" -Enter
+.\tools\vm-type.ps1 -VmName "HNeoC" -Key Up</code></pre>
+<pre><code>& "D:\VB\VBoxManage.exe" debugvm "HNeoC" dumpvmcore --filename build\vmcore.elf</code></pre>
+
+<h2 id="extract">把 guest 写出来的文件挖出来看</h2>
+<p>调试 hncc 产物这类"系统里的程序产生的东西"时，光看屏幕输出不够，要拿到文件本体：关机后把 VDI 转成裸镜像，按 HNeoFS 目录表（LBA 2049 起，每项 64 字节）找到文件，再反汇编：</p>
+<pre><code>.\run.ps1 -Stop
+& "D:\VB\VBoxManage.exe" clonemedium build\hneoc-os.vdi build\guest-dump.img --format RAW</code></pre>
+<pre><code>& "D:\mingw32\bin\objdump.exe" -b binary -m i386 -M intel `
+    --adjust-vma=0x40000000 -D build\out.bin</code></pre>
+<p>用户程序都加载到 <code>0x40000000</code>，所以 <code>--adjust-vma</code> 用这个基址；40 字节的 LXE 头部要跳过。hncc 的两个代码生成 bug 就是这么定位的。</p>
+      </article>
+      <nav class="pager"><a class="prev" href="tools.html"><small>上一页</small>内置工具</a><a class="next" href="faq.html"><small>下一页</small>常见问题</a></nav>
+    </main>
+    <aside class="toc">
+      <p class="toc-title">本页目录</p>
+      <nav id="toc"></nav>
+    </aside>
+  </div>
+  <footer class="site-footer">
+    <p>HNeoC-OS 文档 · <a href="https://github.com/Livy-C/HNeoC-OS" target="_blank" rel="noopener">Livy-C/HNeoC-OS</a> · MIT License</p>
+  </footer>
+  <script src="assets/doc.js"></script>
+</body>
+</html>
