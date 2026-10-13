@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>桦朔汐 Fluorine · Developer</title>
+  <meta name="description" content="桦朔汐 Fluorine 的个人网站——写内核、做模组、收集阈限空间。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 8 C75 25 88 55 50 92 C12 55 25 25 50 8 Z' fill='%23E8B4B8'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ============ 设计变量（改配色只动这里） ============ */
+    :root {
+      --color-bg: #FAF8F5;            /* 页面基底：暖象牙白 */
+      --color-surface: #FDFCFA;       /* 卡片表面 */
+      --color-text: #1A1A1A;          /* 主文字：近黑 */
+      --color-text-soft: rgba(26, 26, 26, 0.55);
+      --color-text-faint: rgba(26, 26, 26, 0.38);
+      --color-sakura: #E8B4B8;        /* 樱花点缀色：柔和粉 */
+      --color-sakura-deep: #F2C4CE;
+      --color-hairline: rgba(26, 26, 26, 0.08);
+
+      --font-serif: "Instrument Serif", "Songti SC", "Noto Serif SC", Georgia, serif;
+      --font-sans: "Inter", "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --nav-h: 72px;
+
+      /* 多层精密阴影：近距实影 + 中距柔影 + 远距氛围影 */
+      --shadow-card:
+        0 1px 2px rgba(26, 26, 26, 0.04),
+        0 4px 12px rgba(26, 26, 26, 0.05),
+        0 20px 48px rgba(26, 26, 26, 0.07);
+      --shadow-card-hover:
+        0 2px 4px rgba(26, 26, 26, 0.05),
+        0 8px 20px rgba(26, 26, 26, 0.07),
+        0 28px 64px rgba(232, 180, 184, 0.28); /* 樱花粉色光晕 */
+    }
+
+    /* ============ 基础 ============ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: calc(var(--nav-h) + 24px);
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-sans);
+      font-weight: 400;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    ::selection { background: rgba(232, 180, 184, 0.35); color: var(--color-text); }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* 小型大写标签：导航与分类标记专用 */
+    .label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--color-text-faint);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .label::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--color-sakura);
+      flex: none;
+    }
+
+    /* ============ 导航：玻璃拟物化 ============ */
+    .site-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      background: rgba(250, 248, 245, 0.7);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.4s var(--ease-out);
+    }
+    .site-nav.is-scrolled { border-bottom-color: var(--color-hairline); }
+
+    .nav-inner {
+      width: 100%;
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .nav-logo {
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      letter-spacing: 0.01em;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-logo::before {
+      content: "";
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--color-sakura);
+      flex: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+    }
+    .nav-links a {
+      color: var(--color-text-soft);
+      position: relative;
+      padding: 4px 0;
+      transition: color 0.3s var(--ease-out);
+    }
+    .nav-links a::after {
+      content: "";
+      position: absolute;
+      left: 0; bottom: 0;
+      width: 100%; height: 1px;
+      background: var(--color-sakura);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s var(--ease-out);
+    }
+    .nav-links a:hover { color: var(--color-text); }
+    .nav-links a:hover::after { transform: scaleX(1); }
+
+    /* ============ Hero ============ */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      padding-top: var(--nav-h);
+    }
+
+    .hero-content { position: relative; z-index: 1; padding: 80px 0 120px; }
+
+    .hero-title {
+      font-family: var(--font-serif);
+      font-weight: 400;
+      font-size: clamp(3.25rem, 9vw, 5.5rem); /* text-5xl ~ text-7xl */
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin: 24px 0 20px;
+    }
+    .hero-title em { font-style: italic; color: var(--color-sakura); }
+
+    .hero-role {
+      font-size: 1.0625rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: var(--color-text-soft);
+      margin-bottom: 18px;
+    }
+
+    .hero-intro {
+      max-width: 34rem;
+      font-size: 1.0625rem;
+      color: var(--color-text-soft);
+      margin-bottom: 44px;
+    }
+
+    .hero-cta { display: flex; align-items: center; gap: 36px; flex-wrap: wrap; }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--color-text);
+      color: var(--color-bg);
+      font-size: 0.9375rem;
+      font-weight: 500;
+      padding: 14px 32px;
+      border-radius: 999px;
+      transition: transform 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out);
+      box-shadow: 0 2px 8px rgba(26, 26, 26, 0.12);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(26, 26, 26, 0.18);
+    }
+    .btn-primary .arrow { transition: transform 0.4s var(--ease-out); }
+    .btn-primary:hover .arrow { transform: translateX(4px); }
+
+    .btn-text {
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: var(--color-text-soft);
+      position: relative;
+      padding-bottom: 2px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: color 0.3s var(--ease-out);
+    }
+    .btn-text::after {
+      content: "";
+      position: absolute;
+      left: 0; bottom: 0;
+      width: 100%; height: 1px;
+      background: var(--color-sakura);
+      transform: scaleX(1);
+      transform-origin: right;
+      transition: transform 0.4s var(--ease-out);
+    }
+    .btn-text:hover { color: var(--color-text); }
+    .btn-text:hover::after { transform: scaleX(0); }
+
+    /* ============ 樱花：三层视差 ============ */
+    .sakura-field {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .sakura-layer { position: absolute; inset: 0; will-change: transform; }
+    .sakura-layer--far  { filter: blur(4px); }
+    .sakura-layer--mid  { filter: blur(2px); }
+    .sakura-layer--near { filter: blur(0); }
+
+    .petal {
+      position: absolute;
+      top: -12vh;
+      animation-name: petal-fall;
+      animation-duration: var(--fall-duration, 15s);
+      animation-delay: var(--fall-delay, 0s);
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+      will-change: transform, opacity;
+    }
+    .petal-shape {
+      display: block;
+      width: var(--petal-size, 10px);
+      height: var(--petal-size, 10px);
+      border-radius: 50% 0 50% 50%; /* 真实花瓣形状 */
+      background: rgba(242, 196, 206, var(--petal-opacity, 0.5));
+      animation-name: petal-sway;
+      animation-duration: var(--sway-duration, 3.5s);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+      animation-iteration-count: infinite;
+      animation-direction: alternate;
+    }
+
+    @keyframes petal-fall {
+      0%   { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0; }
+      6%   { opacity: 1; }
+      94%  { opacity: 1; }
+      100% { transform: translate3d(0, 125vh, 0) rotate(600deg); opacity: 0; }
+    }
+    @keyframes petal-sway {
+      from { transform: translate3d(calc(var(--sway-x, 24px) * -1), 0, 0); }
+      to   { transform: translate3d(var(--sway-x, 24px), 0, 0); }
+    }
+
+    /* ============ 通用区块 ============ */
+    section { padding: 140px 0; } /* 区块间距 ≥ 120px */
+
+    .section-head { margin-bottom: 64px; }
+    .section-title {
+      font-family: var(--font-serif);
+      font-weight: 400;
+      font-size: clamp(2rem, 4.5vw, 2.75rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-top: 20px;
+    }
+
+    /* ============ 关于我 ============ */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 64px;
+      align-items: start;
+    }
+    .about-text p {
+      font-size: 1.125rem;
+      color: var(--color-text-soft);
+      max-width: 34rem;
+    }
+    .about-text p + p { margin-top: 1.2em; }
+    .about-text strong { color: var(--color-text); font-weight: 500; }
+
+    .skills-title {
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--color-text-faint);
+      margin-bottom: 20px;
+    }
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 10px; list-style: none; }
+    .skill-tags li {
+      font-size: 0.875rem;
+      padding: 7px 16px;
+      border-radius: 999px;
+      background: rgba(232, 180, 184, 0.14); /* 半透明色块，非纯色填充 */
+      border: 1px solid rgba(232, 180, 184, 0.25);
+      color: var(--color-text);
+    }
+
+    /* ============ 作品 / 项目 ============ */
+    .work-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 28px;
+    }
+    .card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-hairline);
+      border-radius: 16px;
+      padding: 36px 32px 32px;
+      box-shadow: var(--shadow-card);
+      transition: transform 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .card:hover {
+      transform: translateY(-6px); /* hover 轻微上浮 */
+      box-shadow: var(--shadow-card-hover);
+    }
+    .card-index {
+      font-family: var(--font-serif);
+      font-size: 0.9375rem;
+      color: var(--color-sakura);
+      letter-spacing: 0.08em;
+    }
+    .card-meta {
+      font-size: 0.6875rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--color-text-faint);
+      margin-top: -6px;
+    }
+    .card-title {
+      font-family: var(--font-serif);
+      font-weight: 400;
+      font-size: 1.5rem;
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+    .card-desc {
+      font-size: 0.9375rem;
+      color: var(--color-text-soft);
+      flex: 1;
+    }
+    .card-link {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--color-text-soft);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      transition: color 0.3s var(--ease-out);
+    }
+    .card-link .arrow { transition: transform 0.4s var(--ease-out); }
+    .card:hover .card-link { color: var(--color-text); }
+    .card:hover .card-link .arrow { transform: translateX(4px); }
+
+    /* ============ 联系方式 ============ */
+    .contact { text-align: left; }
+    .contact-title {
+      font-family: var(--font-serif);
+      font-weight: 400;
+      font-size: clamp(2.25rem, 5.5vw, 3.5rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin: 20px 0 28px;
+      max-width: 18em;
+    }
+    .contact-email {
+      font-family: var(--font-serif);
+      font-size: clamp(1.25rem, 3vw, 1.75rem);
+      display: inline-block;
+      position: relative;
+      padding-bottom: 4px;
+      margin-bottom: 48px;
+    }
+    .contact-email::after {
+      content: "";
+      position: absolute;
+      left: 0; bottom: 0;
+      width: 100%; height: 2px;
+      background: var(--color-sakura);
+      transform: scaleX(1);
+      transform-origin: left;
+      transition: transform 0.5s var(--ease-out);
+    }
+    .contact-email:hover::after { transform: scaleX(0); }
+
+    .social-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+    .social-links a {
+      color: var(--color-text-soft);
+      transition: color 0.3s var(--ease-out);
+    }
+    .social-links a:hover { color: var(--color-text); }
+
+    /* ============ 页脚 ============ */
+    .site-footer {
+      border-top: 1px solid var(--color-hairline);
+      padding: 32px 0;
+    }
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--color-text-faint);
+    }
+
+    /* ============ 进场动效：staggered fade-in + Y 位移 ============ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition:
+        opacity 0.6s var(--ease-out),
+        transform 0.6s var(--ease-out);
+      transition-delay: var(--reveal-delay, 0s);
+    }
+    .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+    /* ============ 响应式：移动端优先适配 ============ */
+    @media (max-width: 860px) {
+      .about-grid { grid-template-columns: 1fr; gap: 48px; }
+    }
+    @media (max-width: 560px) {
+      section { padding: 110px 0; }
+      .nav-links { gap: 20px; letter-spacing: 0.12em; }
+      .nav-logo { font-size: 1.05rem; }
+      .hero-cta { gap: 24px; }
+      .footer-inner { justify-content: center; }
+    }
+
+    /* ============ 减少动态偏好 ============ */
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .reveal { opacity: 1; transform: none; transition: none; }
+      .petal, .petal-shape { animation: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 顶部导航：玻璃拟物化固定导航 -->
+  <header class="site-nav">
+    <nav class="nav-inner" aria-label="主导航">
+      <!-- 【修改这里】左侧文字标识 -->
+      <a class="nav-logo" href="#top">桦朔汐 Fluorine</a>
+      <ul class="nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#work">Work</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="top">
+
+    <!-- Hero 区：巨大标题 + 一句话介绍 + 双 CTA -->
+    <section class="hero">
+      <!-- 樱花层由 JS 动态生成，密度 ≤ 20 片，三层视差 -->
+      <div class="sakura-field" aria-hidden="true"></div>
+
+      <div class="container hero-content">
+        <span class="label reveal" style="--reveal-delay: 0s">Personal Portfolio</span>
+        <!-- 【修改这里】姓名 / 头衔 / 一句话介绍 -->
+        <h1 class="hero-title reveal" style="--reveal-delay: 0.08s">桦朔汐 <em>Fluorine</em></h1>
+        <p class="hero-role reveal" style="--reveal-delay: 0.16s">Developer · 广东</p>
+        <p class="hero-intro reveal" style="--reveal-delay: 0.24s">
+          写类 Unix 内核，做 Minecraft 模组，折腾 Wikidot 主题。以及一切「不应该能编译」的东西。
+        </p>
+        <div class="hero-cta reveal" style="--reveal-delay: 0.32s">
+          <a class="btn-primary" href="#work">查看作品 <span class="arrow">→</span></a>
+          <a class="btn-text" href="#contact">联系我</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 关于我 -->
+    <section id="about" aria-label="关于我">
+      <div class="container">
+        <div class="section-head">
+          <span class="label reveal">About</span>
+          <h2 class="section-title reveal" style="--reveal-delay: 0.08s">关于我</h2>
+        </div>
+        <div class="about-grid">
+          <div class="about-text">
+            <!-- 【修改这里】个人介绍，可增删段落 -->
+            <p class="reveal">
+              你好！我是桦朔汐Fluorine！一名业余的Backrooms写手，同时也是一位OIer！自己一般会在家里捣鼓一些简单的小项目，但更多还是vibe-coding啦（
+            </p>
+            <p class="reveal" style="--reveal-delay: 0.1s">
+              相信代码可以既<strong>精确又安静</strong>——就像这个页面一样。
+            </p>
+          </div>
+          <div class="reveal" style="--reveal-delay: 0.16s">
+            <p class="skills-title">Skills</p>
+            <!-- 【修改这里】技能标签 -->
+            <ul class="skill-tags">
+              <li>C</li>
+              <li>Java</li>
+              <li>CSS</li>
+              <li>OS Kernel</li>
+              <li>x86</li>
+              <li>Minecraft Modding</li>
+              <li>Wikidot</li>
+              <li>Git</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 作品 / 项目 -->
+    <section id="work" aria-label="作品">
+      <div class="container">
+        <div class="section-head">
+          <span class="label reveal">Work</span>
+          <h2 class="section-title reveal" style="--reveal-delay: 0.08s">精选作品</h2>
+        </div>
+        <div class="work-grid">
+          <!-- 【修改这里】复制/删除卡片即可增减项目；链接换成真实地址 -->
+          <article class="card reveal">
+            <span class="card-index">01</span>
+            <h3 class="card-title">HNeoC-OS</h3>
+            <p class="card-meta">C · ★ 3 · v0.3.0</p>
+            <p class="card-desc">从零写起的类 Unix 小型操作系统（x86 32 位）：分页、ATA 磁盘驱动、自己的文件系统、系统调用、fork / exec / wait、抢占式多任务——Shell 也是 ring 3 用户程序。</p>
+            <a class="card-link" href="https://github.com/Livy-C/HNeoC-OS" target="_blank" rel="noopener">查看项目 <span class="arrow">→</span></a>
+          </article>
+          <article class="card reveal" style="--reveal-delay: 0.1s">
+            <span class="card-index">02</span>
+            <h3 class="card-title">The Blockrooms</h3>
+            <p class="card-meta">Java · ★ 3</p>
+            <p class="card-desc">Blockrooms 模组——把阈限空间搬进方块世界，与上游 HYP-HLP/the-blockrooms 共同维护的 Minecraft 项目。</p>
+            <a class="card-link" href="https://github.com/Livy-C/the-blockrooms" target="_blank" rel="noopener">查看项目 <span class="arrow">→</span></a>
+          </article>
+          <article class="card reveal">
+            <span class="card-index">04</span>
+            <h3 class="card-title">EndRingReborn</h3>
+            <p class="card-meta">Java · ★ 1</p>
+            <p class="card-desc">让末地环（end ring）回归的 简单小Minecraft 模组</p>
+            <a class="card-link" href="https://github.com/Livy-C/EndRingReborn" target="_blank" rel="noopener">查看项目 <span class="arrow">→</span></a>
+          </article>
+          <article class="card reveal" style="--reveal-delay: 0.1s">
+            <span class="card-index">05</span>
+            <h3 class="card-title">kun-liminal-theme</h3>
+            <p class="card-meta">CSS · ★ 1</p>
+            <p class="card-desc">Kun Liminal Theme——为 The Kunrooms Wikidot 打造的liminal 风格站点主题。</p>
+            <a class="card-link" href="https://github.com/Livy-C/kun-liminal-theme" target="_blank" rel="noopener">查看项目 <span class="arrow">→</span></a>
+          </article>
+          <article class="card reveal" style="--reveal-delay: 0.2s">
+            <span class="card-index">06</span>
+            <h3 class="card-title">OneHourSurvival</h3>
+            <p class="card-meta">Plugin</p>
+            <p class="card-desc">一小时生存玩法插件——在六十分钟倒计时里，看谁能活到最后。</p>
+            <a class="card-link" href="https://github.com/Livy-C/OneHourSurvival" target="_blank" rel="noopener">查看项目 <span class="arrow">→</span></a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 联系方式 -->
+    <section id="contact" aria-label="联系方式">
+      <div class="container contact">
+        <span class="label reveal">Contact</span>
+        <h2 class="contact-title reveal" style="--reveal-delay: 0.08s">有想法？<br>一起聊聊。</h2>
+        <!-- 【修改这里】邮箱与社交链接 -->
+        <a class="contact-email reveal" style="--reveal-delay: 0.16s" href="mailto:yaoshiz_@outlook.com">yaoshiz_@outlook.com</a>
+        <ul class="social-links reveal" style="--reveal-delay: 0.24s">
+          <li><a href="https://github.com/Livy-C" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="mailto:yaoshiz_@outlook.com">Email</a></li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>© <span id="year"></span> 桦朔汐 Fluorine</span>
+      <span>Designed with 樱花与留白</span>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      /* ============ 樱花花瓣生成（总数 ≤ 20，三层视差） ============ */
+      var field = document.querySelector(".sakura-field");
+      var layerEls = [];
+
+      if (field && !reduceMotion) {
+        var rand = function (min, max) { return Math.random() * (max - min) + min; };
+
+        var layers = [
+          { cls: "sakura-layer--far",  count: 8, size: [6, 9],   opacity: [0.35, 0.45], fall: [16, 24], speed: 0.10 },
+          { cls: "sakura-layer--mid",  count: 6, size: [9, 12],  opacity: [0.45, 0.55], fall: [13, 19], speed: 0.18 },
+          { cls: "sakura-layer--near", count: 4, size: [12, 16], opacity: [0.55, 0.60], fall: [10, 15], speed: 0.28 }
+        ];
+
+        layers.forEach(function (cfg) {
+          var layer = document.createElement("div");
+          layer.className = "sakura-layer " + cfg.cls;
+
+          for (var i = 0; i < cfg.count; i++) {
+            var petal = document.createElement("span");
+            petal.className = "petal";
+            petal.style.left = rand(0, 100).toFixed(2) + "vw";
+            petal.style.setProperty("--petal-size", rand(cfg.size[0], cfg.size[1]).toFixed(1) + "px");
+            petal.style.setProperty("--petal-opacity", rand(cfg.opacity[0], cfg.opacity[1]).toFixed(2));
+            petal.style.setProperty("--fall-duration", rand(cfg.fall[0], cfg.fall[1]).toFixed(1) + "s");
+            petal.style.setProperty("--fall-delay", (-rand(0, cfg.fall[1])).toFixed(1) + "s"); /* 负延迟：载入即在中途 */
+            petal.style.setProperty("--sway-duration", rand(2.5, 4.5).toFixed(1) + "s");
+            petal.style.setProperty("--sway-x", rand(14, 42).toFixed(0) + "px");
+
+            var shape = document.createElement("span");
+            shape.className = "petal-shape";
+            petal.appendChild(shape);
+            layer.appendChild(petal);
+          }
+
+          field.appendChild(layer);
+          layerEls.push({ el: layer, speed: cfg.speed });
+        });
+      }
+
+      /* ============ 滚动视差：三层不同速度 ============ */
+      var ticking = false;
+      function parallax() {
+        var y = window.scrollY || window.pageYOffset || 0;
+        for (var i = 0; i < layerEls.length; i++) {
+          layerEls[i].el.style.transform =
+            "translate3d(0," + (y * layerEls[i].speed).toFixed(1) + "px,0)";
+        }
+        ticking = false;
+      }
+      window.addEventListener("scroll", function () {
+        if (!ticking) {
+          requestAnimationFrame(parallax);
+          ticking = true;
+        }
+      }, { passive: true });
+      parallax();
+
+      /* ============ 进场动效：IntersectionObserver + stagger ============ */
+      var revealEls = Array.prototype.slice.call(document.querySelectorAll(".reveal"));
+
+      function showAll() {
+        revealEls.forEach(function (el) { el.classList.add("is-visible"); });
+      }
+
+      if (reduceMotion || !("IntersectionObserver" in window)) {
+        showAll();
+      } else {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+
+        revealEls.forEach(function (el) { io.observe(el); });
+
+        /* Hero 首屏元素载入即播放 */
+        window.addEventListener("load", function () {
+          document.querySelectorAll(".hero .reveal").forEach(function (el) {
+            el.classList.add("is-visible");
+          });
+        });
+      }
+
+      /* ============ 导航滚动态 ============ */
+      var nav = document.querySelector(".site-nav");
+      function navScroll() {
+        nav.classList.toggle("is-scrolled", (window.scrollY || 0) > 24);
+      }
+      window.addEventListener("scroll", navScroll, { passive: true });
+      navScroll();
+
+      /* 页脚年份 */
+      document.getElementById("year").textContent = new Date().getFullYear();
+    })();
+  </script>
+</body>
+</html>
